@@ -8,23 +8,26 @@ using System.Linq;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using DicomConsoleApps;
 
 namespace DicomConsoleApp
 {
     class Program
     {
-        private static readonly string myDicomDirectoryToBeSearched = @"\\INBLRH05022WSPR.ad005.onehc.net\AI-Rad-Repository\Image-pool\Stingray-iTest\";
-        private static readonly string myUncompressedFilePath = @"D:\SourceCodes\ConsoleApps\Uncompressed\";
-        private static readonly string myLogFilePath = @"D:\SourceCodes\ConsoleApps\";
+        private static readonly string myDicomDirectoryToBeSearched = @"D:\Program\input\";
+        private static readonly string myUncompressedFilePath = @"D:\Program\output\";
+        private static readonly string myLogFilePath = @"D:\Program\output\";
 
         static void Main(string[] args)
         {
+            DicomImageDrawing dicomImageDrawing = new DicomImageDrawing();
+            /*
             myDicomFileListInTheDirectory = GetDicomFileListInTheDirectory();
             //FindFileForSingleTag();
             //FindFileForDoubleTag();
-            //UncompressDicomFiles();
-            RunAllQualityGateFilters();
-
+            UncompressDicomFiles();
+            //RunAllQualityGateFilters();
+            */
             Console.ReadLine();
         }
 
@@ -158,17 +161,24 @@ namespace DicomConsoleApp
 
             foreach (var file in myDicomFileListInTheDirectory)
             {
-                try
-                {
+                //try
+                //{
                     var inputFile = DicomFile.Open(file);
-                    var outputFile = DicomCodecExtensions.Clone(inputFile, DicomTransferSyntax.ExplicitVRLittleEndian);
-                    var outputFileName = file.Split('\\').Last();
-                    outputFile.Save(myUncompressedFilePath + outputFileName);
-                }
-                catch (Exception e)
-                {
-                    continue;
-                }
+                    //var outputFile = DicomCodecExtensions.Clone(inputFile, DicomTransferSyntax.DeflatedExplicitVRLittleEndian); // JPEGLSLossless JPEGProcess14 RLELossless DeflatedExplicitVRLittleEndian
+                
+                var transcoder = new DicomTranscoder(inputFile.Dataset.InternalTransferSyntax, DicomTransferSyntax.ExplicitVRLittleEndian);
+                var file2 = transcoder.Transcode(inputFile); 
+                var newFile = file2.Clone(DicomTransferSyntax.RLELossless);
+                var outputFileName2 = file.Split('\\').Last();
+                newFile.Save(myUncompressedFilePath + outputFileName2);
+
+                //var outputFileName = file.Split('\\').Last();
+                //outputFile.Save(myUncompressedFilePath + outputFileName2);
+                //}
+                //catch (Exception e)
+                //{
+                //    continue;
+                //}
             }
 
             StopTimer();
